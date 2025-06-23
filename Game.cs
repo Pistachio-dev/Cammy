@@ -37,6 +37,7 @@ public static unsafe class Game
 
     private static void SetCameraLookAtDetour(GameCamera* camera, Vector3* lookAtPosition, Vector3* cameraPosition, Vector3* a4) // a4 seems to be immediately overwritten and unused
     {
+        if (CodeMovableCamera.Enabled) return;
         if (FreeCam.Enabled) return;
         camera->VTable.setCameraLookAt.Original(camera, lookAtPosition, cameraPosition, a4);
     }
@@ -47,6 +48,11 @@ public static unsafe class Game
     private static float interpolatedHeight;
     private static void GetCameraPositionDetour(GameCamera* camera, GameObject* target, Vector3* position, Bool swapPerson)
     {
+        if (CodeMovableCamera.Enabled)
+        {
+            *position = CodeMovableCamera.Position;
+            return;
+        }
         if (!FreeCam.Enabled)
         {
             var preset = PresetManager.CurrentPreset;
