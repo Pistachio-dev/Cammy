@@ -51,6 +51,13 @@ public static unsafe class Game
         if (CodeMovableCamera.Enabled)
         {
             *position = CodeMovableCamera.Position;
+            camera->currentHRotation = CodeMovableCamera.HRotation;
+            camera->currentVRotation = 0;
+            camera->currentZoom = CodeMovableCamera.Zoom;
+            if (CodeMovableCamera.Target != null)
+            {
+                //*target = *CodeMovableCamera.Target;
+            }
             return;
         }
         if (!FreeCam.Enabled)
