@@ -20,7 +20,7 @@ public class Cammy(IDalamudPluginInterface pluginInterface) : DalamudPlugin<Conf
 
     private const string cammySubcommands = "/cammy [ help | preset | zoom | fov | spectate | nocollide | freecam ]";
 
-    [PluginCommand("/cammy", HelpMessage = "Opens / closes the config. Additional usage: " + cammySubcommands)]
+    //[PluginCommand("/cammy", HelpMessage = "Opens / closes the config. Additional usage: " + cammySubcommands)]
     private unsafe void ToggleConfig(string command, string argument)
     {
         if (string.IsNullOrEmpty(argument))
@@ -119,8 +119,9 @@ public class Cammy(IDalamudPluginInterface pluginInterface) : DalamudPlugin<Conf
 
     protected override void Update()
     {
-        FreeCam.Update();
-        PresetManager.Update();
+        CodeMovableCamera.Update();
+        //FreeCam.Update();
+        //PresetManager.Update();
     }
 
     protected override void Draw() => PluginUI.Draw();
@@ -149,6 +150,10 @@ public class Cammy(IDalamudPluginInterface pluginInterface) : DalamudPlugin<Conf
         if (FreeCam.Enabled)
             FreeCam.Toggle();
 
+        if (CodeMovableCamera.Enabled)
+        {
+            CodeMovableCamera.Dispose();
+        }
         Game.Dispose();
     }
 }

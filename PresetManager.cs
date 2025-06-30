@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace Cammy;
@@ -62,7 +62,7 @@ public static class PresetManager
 
     public static void Update()
     {
-        if (!DalamudApi.ClientState.IsLoggedIn || FreeCam.Enabled || PresetOverride != null) return;
+        if (!DalamudApi.ClientState.IsLoggedIn || FreeCam.Enabled || CodeMovableCamera.Enabled || PresetOverride != null) return;
         CheckCameraConditionSets(false);
     }
 

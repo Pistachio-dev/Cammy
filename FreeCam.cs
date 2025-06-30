@@ -74,7 +74,7 @@ public static unsafe class FreeCam
         [FreeCamBindings.ControllerEndFreeCam] = 35 // Controller Open Main Menu
     };
 
-    private static readonly CameraConfigPreset freeCamPreset = new()
+    public static readonly CameraConfigPreset freeCamPreset = new()
     {
         MinVRotation = -1.559f,
         MaxVRotation = 1.559f,

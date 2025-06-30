@@ -18,7 +18,7 @@ namespace Cammy
         public static GameCamera* gameCamera;
         private static Vector3 SavedPosition = new Vector3();
         private static Vector3 SavedViewPosition = new Vector3();
-        private static Vector4 SavedLookAtPosition = new Vector4();
+        private static Vector3 SavedLookAtPosition = new Vector3();
         public static GameObject* Target = null;
         private static float SavedZoom = 1;
         public static float HRotation = 0;
@@ -26,19 +26,24 @@ namespace Cammy
         public static float Zoom = 1;
         public static Vector3 Position = new Vector3();
         public static Vector3 ViewPosition = new Vector3();
-        public static Vector4 LookAtPosition = new Vector4();
+        public static Vector3 LookAtPosition = new Vector3();
+        public static Vector3 A4 = Vector3.One;
+        public static CameraConfigPreset previousPreset = null;
+        public static float SavedFoV = 0;
 
         public static void Enable()
         {
-            if (gameCamera == null)
-            {
-                gameCamera = Common.CameraManager->worldCamera;
-            }
+            gameCamera = Common.CameraManager->worldCamera;
 
             SavedPosition = new Vector3(gameCamera->x, gameCamera->y, gameCamera->z);
             SavedViewPosition = new Vector3(gameCamera->viewX, gameCamera->viewY, gameCamera->viewZ);
-            SavedLookAtPosition = new Vector4(gameCamera->lookAtX, gameCamera->lookAtY, gameCamera->lookAtZ, gameCamera->lookAtY2);
+            SavedLookAtPosition = new Vector3(gameCamera->lookAtX, gameCamera->lookAtY, gameCamera->lookAtZ);
             SavedZoom = gameCamera->currentZoom;
+            SavedFoV = gameCamera->currentFoV;
+            gameCamera->mode = 1;
+            Game.cameraNoClippyReplacer.Enable();
+            previousPreset = PresetManager.ActivePreset;
+            FreeCam.freeCamPreset.Apply();
             enabled = true;
         }
 
@@ -56,13 +61,33 @@ namespace Cammy
             Position = new Vector3((float)x, (float)y, (float)z);
         }
 
+        public static void Update()
+        {
+            if (!Enabled || gameCamera == null)
+            {
+                return;
+            }
+            gameCamera->x = Position.X; gameCamera->y = Position.Y; gameCamera->z = Position.Z;
+        }
         public static void Disable()
         {
             Position = SavedPosition;
             ViewPosition = SavedViewPosition;
             LookAtPosition = SavedLookAtPosition;
             Zoom = SavedZoom;
+
+            PresetManager.DefaultPreset.Apply();
+            PresetManager.DisableCameraPresets();
+            PresetManager.CurrentPreset = previousPreset;
+            gameCamera->currentZoom = gameCamera->interpolatedZoom = SavedZoom;
+            gameCamera->currentFoV = (float)Math.Max(SavedFoV, 1.5);
             enabled = false;
+            Game.cameraNoClippyReplacer.Disable();
+        }
+
+        public static void Dispose()
+        {
+            Disable();
         }
     }
 }

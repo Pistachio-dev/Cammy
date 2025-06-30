@@ -33,11 +33,24 @@ public static unsafe class Game
     private static nint forceDisableMovementPtr;
     public static ref int ForceDisableMovement => ref *(int*)forceDisableMovementPtr; // Increments / decrements by 1 to allow multiple things to disable movement at the same time
 
-    private static float GetZoomDeltaDetour() => PresetManager.CurrentPreset.ZoomDelta;
+    private static float GetZoomDeltaDetour()
+    {
+        if (CodeMovableCamera.Enabled)
+        {
+            return 0;
+        }
+
+        return PresetManager.CurrentPreset.ZoomDelta;
+    }
 
     private static void SetCameraLookAtDetour(GameCamera* camera, Vector3* lookAtPosition, Vector3* cameraPosition, Vector3* a4) // a4 seems to be immediately overwritten and unused
     {
-        if (CodeMovableCamera.Enabled) return;
+        if (CodeMovableCamera.Enabled)
+        {
+                camera->currentHRotation = CodeMovableCamera.HRotation;
+                camera->currentVRotation = 0;
+            return;
+        }
         if (FreeCam.Enabled) return;
         camera->VTable.setCameraLookAt.Original(camera, lookAtPosition, cameraPosition, a4);
     }
@@ -51,13 +64,12 @@ public static unsafe class Game
         if (CodeMovableCamera.Enabled)
         {
             *position = CodeMovableCamera.Position;
-            camera->currentHRotation = CodeMovableCamera.HRotation;
-            camera->currentVRotation = 0;
-            camera->currentZoom = CodeMovableCamera.Zoom;
-            if (CodeMovableCamera.Target != null)
-            {
-                //*target = *CodeMovableCamera.Target;
-            }
+
+            return;
+        }
+        if (FreeCam.Enabled)
+        {
+            *position = FreeCam.Position;
             return;
         }
         if (!FreeCam.Enabled)
@@ -115,10 +127,6 @@ public static unsafe class Game
             position->X += -preset.SideOffset * MathF.Sin(a);
             position->Z += -preset.SideOffset * MathF.Cos(a);
         }
-        else
-        {
-            *position = FreeCam.Position;
-        }
     }
 
     private static GameObject* GetCameraTargetDetour(GameCamera* camera)
@@ -148,9 +156,9 @@ public static unsafe class Game
         return camera->VTable.getCameraTarget.Original(camera);
     }
 
-    private static Bool CanChangePerspectiveDetour() => !FreeCam.Enabled;
+    private static Bool CanChangePerspectiveDetour() => !(FreeCam.Enabled || CodeMovableCamera.Enabled);
 
-    private static byte GetCameraAutoRotateModeDetour(GameCamera* camera, Framework* framework) => (byte)(FreeCam.Enabled || IsSpectating ? 4 : GameCamera.getCameraAutoRotateMode.Original(camera, framework));
+    private static byte GetCameraAutoRotateModeDetour(GameCamera* camera, Framework* framework) => (byte)(FreeCam.Enabled || IsSpectating || CodeMovableCamera.Enabled ? 4 : GameCamera.getCameraAutoRotateMode.Original(camera, framework));
 
     private static float GetCameraMaxMaintainDistanceDetour(GameCamera* camera) => GameCamera.getCameraMaxMaintainDistance.Original(camera) is var ret && ret < 10f ? ret : camera->maxZoom;
 
