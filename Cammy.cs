@@ -118,15 +118,27 @@ public class Cammy(IDalamudPluginInterface pluginInterface) : DalamudPlugin<Conf
 
     protected override void Update()
     {
-        CodeMovableCamera.Update();
+        // Workaround for disconnects
+        var loggedIn = DalamudApi.ClientState.IsLoggedIn;
+        if (loggedIn != didLogin)
+        {
+            if (!didLogin)
+                Login();
+            else
+                didLogin = false;
+        }
+
         //FreeCam.Update();
         //PresetManager.Update();
     }
 
     protected override void Draw() => PluginUI.Draw();
 
+    private static bool didLogin = false; // Workaround
     private static void Login()
     {
+        if (didLogin) return;
+        didLogin = true;
         DalamudApi.Framework.Update += UpdateDefaultPreset;
         PresetManager.DisableCameraPresets();
         PresetManager.CheckCameraConditionSets(true);

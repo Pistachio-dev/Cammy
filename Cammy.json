@@ -13,5 +13,5 @@
   ],
   "InternalName": "Cammy",
   "AssemblyVersion": "9.9.9.9",
-  "Changelog": ""
+  "Changelog": "Fix disconnects not reapply presets on login"
 }
